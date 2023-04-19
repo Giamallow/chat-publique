@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Chat en direct</title>
+</head>
+<body>
+	<h1>Chat en direct</h1>
+
+	<div id="chatbox"></div>
+
+	<form>
+		<label for="username">Nom d'utilisateur :</label>
+		<input type="text" id="username" name="username" required>
+		<br><br>
+		<label for="message">Message :</label>
+		<input type="text" id="message" name="message" required>
+		<button type="submit">Envoyer</button>
+	</form>
+
+	<script>
+		// Code JavaScript pour envoyer et recevoir des messages
+		const chatbox = document.querySelector('#chatbox');
+		const form = document.querySelector('form');
+		const usernameInput = document.querySelector('#username');
+		const messageInput = document.querySelector('#message');
+		const messages = [];
+
+		// fonction pour afficher les messages dans la boîte de chat
+		function displayMessages() {
+			chatbox.innerHTML = '';
+			for (let message of messages) {
+				chatbox.innerHTML += `<p><strong>${message.username}:</strong> ${message.message}</p>`;
+			}
+		}
+
+		// fonction pour envoyer un message
+		function sendMessage() {
+			const username = usernameInput.value;
+			const message = messageInput.value;
+			const messageObject = { username, message };
+			messages.push(messageObject);
+			displayMessages();
+			messageInput.value = '';
+		}
+
+		// ajouter un événement pour envoyer un message lorsque le formulaire est soumis
+		form.addEventListener('submit', (event) => {
+			event.preventDefault();
+			sendMessage();
+		});
+
+		// afficher les messages sauvegardés lors du chargement de la page
+		window.addEventListener('load', () => {
+			const savedMessages = JSON.parse(localStorage.getItem('messages'));
+			if (savedMessages) {
+				messages.push(...savedMessages);
+			}
+			displayMessages();
+		});
+
+		// sauvegarder les messages chaque fois qu'un nouveau message est envoyé
+		setInterval(() => {
+			localStorage.setItem('messages', JSON.stringify(messages));
+		}, 1000);
+	</script>
+</body>
+</html>
