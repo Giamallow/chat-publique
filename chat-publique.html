@@ -1,67 +1,68 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Chat en direct</title>
+  <meta charset="UTF-8">
+  <title>Messagerie en temps réel</title>
+  <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js"></script>
 </head>
 <body>
-	<h1>Chat en direct</h1>
+  <h1>Messagerie en temps réel</h1>
 
-	<div id="chatbox"></div>
+  <div id="message-container">
+    <!-- L'endroit où les messages seront affichés -->
+  </div>
 
-	<form>
-		<label for="username">Nom d'utilisateur :</label>
-		<input type="text" id="username" name="username" required>
-		<br><br>
-		<label for="message">Message :</label>
-		<input type="text" id="message" name="message" required>
-		<button type="submit">Envoyer</button>
-	</form>
+  <form id="message-form">
+    <input type="text" id="message-input" placeholder="Saisissez votre message">
+    <button type="submit">Envoyer</button>
+  </form>
 
-	<script>
-		// Code JavaScript pour envoyer et recevoir des messages
-		const chatbox = document.querySelector('#chatbox');
-		const form = document.querySelector('form');
-		const usernameInput = document.querySelector('#username');
-		const messageInput = document.querySelector('#message');
-		const messages = [];
+  <script>
+    // Configuration de Firebase
+    var firebaseConfig = {
+        apiKey: "AIzaSyALSZ4uqiqhaRqnpaBiszSkyDSJluAcrJ0",
+        authDomain: "augmented-works-379513.firebaseapp.com",
+        projectId: "augmented-works-379513",
+        storageBucket: "augmented-works-379513.appspot.com",
+        messagingSenderId: "245193066729",
+        appId: "1:245193066729:web:2ce22d373b481095de0878",
+        measurementId: "G-S4MDTKJ9XQ"
+    };
 
-		// fonction pour afficher les messages dans la boîte de chat
-		function displayMessages() {
-			chatbox.innerHTML = '';
-			for (let message of messages) {
-				chatbox.innerHTML += `<p><strong>${message.username}:</strong> ${message.message}</p>`;
-			}
-		}
+    // Initialisation de Firebase
+    firebase.initializeApp(firebaseConfig);
 
-		// fonction pour envoyer un message
-		function sendMessage() {
-			const username = usernameInput.value;
-			const message = messageInput.value;
-			const messageObject = { username, message };
-			messages.push(messageObject);
-			displayMessages();
-			messageInput.value = '';
-		}
+    // Référence à la base de données Firebase
+    var messagesRef = firebase.database().ref('messages');
 
-		// ajouter un événement pour envoyer un message lorsque le formulaire est soumis
-		form.addEventListener('submit', (event) => {
-			event.preventDefault();
-			sendMessage();
-		});
+    // Écouteur d'événement pour l'envoi du formulaire
+    document.getElementById('message-form').addEventListener('submit', sendMessage);
 
-		// afficher les messages sauvegardés lors du chargement de la page
-		window.addEventListener('load', () => {
-			const savedMessages = JSON.parse(localStorage.getItem('messages'));
-			if (savedMessages) {
-				messages.push(...savedMessages);
-			}
-			displayMessages();
-		});
+    // Fonction pour envoyer un message
+    function sendMessage(e) {
+      e.preventDefault();
 
-		// sauvegarder les messages chaque fois qu'un nouveau message est envoyé
-		setInterval(() => {
-			localStorage.setItem('messages', JSON.stringify(messages));
-		}, 1000);
-	</script>
+      // Récupération du message
+      var messageInput = document.getElementById('message-input');
+      var message = messageInput.value;
+
+      // Envoi du message à la base de données
+      messagesRef.push().set({
+        text: message
+      });
+
+      // Réinitialisation du champ de saisie
+      messageInput.value = '';
+    }
+
+    // Écouteur d'événement pour la mise à jour des messages
+    messagesRef.on('child_added', function(snapshot) {
+      var message = snapshot.val().text;
+      var messageElement = document.createElement('p');
+      messageElement.innerText = message;
+      document.getElementById('message-container').appendChild(messageElement);
+    });
+  </script>
 </body>
 </html>
